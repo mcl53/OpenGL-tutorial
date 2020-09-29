@@ -26,29 +26,30 @@ void processKeyPress(GLFWwindow *window, int key, int scancode, int action, int 
     }
 }
 
-void processArrowKey(GLFWwindow *window, float *vertices) {
-    float speed = 0.005;
+void processArrowKey(GLFWwindow *window, float *vertices, int valuesPerVertex, int verticesLength) {
+    float speed = 0.01;
+
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        for (int i = 0; i < 18; i++) {
-            if (i % 6 == 0) {
+        for (int i = 0; i < verticesLength; i++) {
+            if (i % valuesPerVertex == 0) {
                 vertices[i] -= speed;
             }
         }
     } else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        for (int i = 0; i < 18; i++) {
-            if (i % 6 == 0) {
+        for (int i = 0; i < verticesLength; i++) {
+            if (i % valuesPerVertex == 0) {
                 vertices[i] += speed;
             }
         }
     } else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        for (int i = 0; i < 18; i++) {
-            if (i % 6 == 1) {
+        for (int i = 0; i < verticesLength; i++) {
+            if (i % valuesPerVertex == 1) {
                 vertices[i] += speed;
             }
         }
     } else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        for (int i = 0; i < 18; i++) {
-            if (i % 6 == 1) {
+        for (int i = 0; i < verticesLength; i++) {
+            if (i % valuesPerVertex == 1) {
                 vertices[i] -= speed;
             }
         }

@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <test.hpp>
+#include <input.hpp>
 #include "shader.hpp"
 #include "utils.hpp"
 #include <stb/stb_image.h>
@@ -23,11 +23,14 @@ int main() {
     bool clicked = false;
 
     float vertices1[] = {
-        // location       // colour
-        0.0f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
-        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f
+        // location       // colour         // texture coords
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom left
+        -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top left
+        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top right
+        0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f // bottom right
     };
+
+    int sizeOfVertices = sizeof(vertices1) / sizeof(vertices1[0]);
 
     float textureCoords[] = {
         0.0f, 0.0f,
@@ -35,27 +38,45 @@ int main() {
         0.5f, 1.0f
     };
 
-    // unsigned int indices[] = {
-    //     0, 1, 2,
-    // };
+    // load in texture
+    int tWidth, tHeight, tNrChannels;
+    unsigned int texture;
+    unsigned char *data = stbi_load("textures/container.jpg", &tWidth, &tHeight, &tNrChannels, 0);
+    if (data) {
+        glGenTextures(1, &texture);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tWidth, tHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
 
-    unsigned int VAO, VBO;
+
+    unsigned int indices[] = {
+        0, 1, 2,
+        0, 2, 3
+    };
+
+    unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    // glGenBuffers(1, &EBO);
+    glGenBuffers(1, &EBO);
     // bind the Vertex Array Object first, then bind and set vertex buffer(s) and set vertex attribute(s)
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -63,7 +84,7 @@ int main() {
         // Get inputs
         processClose(window);
         processClick(window, clicked);
-        processArrowKey(window, vertices1);
+        processArrowKey(window, vertices1, 8, sizeOfVertices);
         glfwSetKeyCallback(window, processKeyPress);
 
         // Render to window
@@ -74,8 +95,10 @@ int main() {
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
         
         glUseProgram(shaderProgram.id);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
 
