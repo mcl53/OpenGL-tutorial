@@ -27,11 +27,29 @@ void processKeyPress(GLFWwindow *window, int key, int scancode, int action, int 
 }
 
 void processArrowKey(GLFWwindow *window, float *vertices) {
-    if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        std::cout << "Left key pressed" << std::endl;
-        for (int i = 0; i < 9; i++) {
-            if (i % 3 == 0) {
-                vertices[i] -= 0.001;
+    float speed = 0.005;
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        for (int i = 0; i < 18; i++) {
+            if (i % 6 == 0) {
+                vertices[i] -= speed;
+            }
+        }
+    } else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        for (int i = 0; i < 18; i++) {
+            if (i % 6 == 0) {
+                vertices[i] += speed;
+            }
+        }
+    } else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        for (int i = 0; i < 18; i++) {
+            if (i % 6 == 1) {
+                vertices[i] += speed;
+            }
+        }
+    } else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        for (int i = 0; i < 18; i++) {
+            if (i % 6 == 1) {
+                vertices[i] -= speed;
             }
         }
     }
