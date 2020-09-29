@@ -24,10 +24,10 @@ int main() {
 
     float vertices1[] = {
         // location       // colour         // texture coords
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // bottom left
-        -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // top left
-        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top right
-        0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f // bottom right
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // bottom left
+        -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // top left
+        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, // top right
+        0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f // bottom right
     };
 
     int sizeOfVertices = sizeof(vertices1) / sizeof(vertices1[0]);
@@ -40,16 +40,25 @@ int main() {
 
     // load in texture
     int tWidth, tHeight, tNrChannels;
-    unsigned int texture;
-    unsigned char *data = stbi_load("textures/container.jpg", &tWidth, &tHeight, &tNrChannels, 0);
-    if (data) {
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tWidth, tHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    unsigned int container, awesomeface;
+    unsigned char* containerData = stbi_load("textures/container.jpg", &tWidth, &tHeight, &tNrChannels, 0);
+    if (containerData) {
+        glGenTextures(1, &container);
+        glBindTexture(GL_TEXTURE_2D, container);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tWidth, tHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, containerData);
         glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(data);
+        stbi_image_free(containerData);
     } else {
         std::cout << "Failed to load texture" << std::endl;
+    }
+
+    unsigned char* awesomefaceData = stbi_load("textures/awesomeface.png", &tWidth, &tHeight, &tNrChannels, 0);
+    if (awesomefaceData) {
+        glGenTextures(1, &awesomeface);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, awesomeface);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tWidth, tHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, awesomefaceData);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 
 
@@ -79,6 +88,9 @@ int main() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    shaderProgram.use();
+    shaderProgram.setInt("containerTex", 0);
+    shaderProgram.setInt("awesomefaceTex", 1);
 
     while (!glfwWindowShouldClose(window)) {
         // Get inputs
@@ -94,8 +106,10 @@ int main() {
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
         
-        glUseProgram(shaderProgram.id);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, container);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, awesomeface);
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
