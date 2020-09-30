@@ -26,8 +26,9 @@ void processKeyPress(GLFWwindow *window, int key, int scancode, int action, int 
     }
 }
 
+float speed = 0.01;
+
 void processArrowKey(GLFWwindow *window, float *vertices, int valuesPerVertex, int verticesLength) {
-    float speed = 0.01;
 
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
         for (int i = 0; i < verticesLength; i++) {
@@ -52,6 +53,31 @@ void processArrowKey(GLFWwindow *window, float *vertices, int valuesPerVertex, i
             if (i % valuesPerVertex == 1) {
                 vertices[i] -= speed;
             }
+        }
+    } 
+    if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
+        speed += 0.001;
+        if (speed > 0.05f) {
+            speed = 0.05f;
+        }
+    } else if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
+        speed -= 0.001;
+        if (speed < 0.001) {
+            speed = 0.001;
+        }
+    }
+}
+
+void processChangeMixValue(GLFWwindow* window, float &currentMixValue) {
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
+        currentMixValue += 0.1;
+        if (currentMixValue > 1.0) {
+            currentMixValue = 1.0;
+        }
+    } else if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
+        currentMixValue -= 0.1;
+        if (currentMixValue < -1.0) {
+            currentMixValue = -1.0;
         }
     }
 }

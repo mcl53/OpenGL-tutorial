@@ -5,7 +5,8 @@ in vec2 TextureCoords;
 
 uniform sampler2D containerTex;
 uniform sampler2D awesomefaceTex;
-
+uniform float textureMix;
 void main() {
-  FragColour = mix(texture(containerTex, TextureCoords), texture(awesomefaceTex, TextureCoords), 0.4f);
+  FragColour = mix(texture(containerTex, TextureCoords), 
+                   texture(awesomefaceTex, TextureCoords), textureMix);
 }
