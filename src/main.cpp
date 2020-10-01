@@ -109,17 +109,16 @@ int main() {
     shaderProgram.use();
     shaderProgram.setInt("containerTex", 0);
     shaderProgram.setInt("awesomefaceTex", 1);
-
-    glm::mat4 trans(1.0f);
-    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-
-    float rotation = -0.02f;
+    
+    translation boxTrans;
+    boxTrans.x = 0.0f;
+    boxTrans.y = 0.0f;
 
     while (!glfwWindowShouldClose(window)) {
         // Get inputs
         processClose(window);
         processClick(window, clicked);
-        processArrowKey(window, vertices1, 8, sizeOfVertices);
+        processArrowKey(window, boxTrans);
         processChangeMixValue(window, textureMixValue);
         glfwSetKeyCallback(window, processKeyPress);
         shaderProgram.setFloat("textureMix", textureMixValue);
@@ -127,13 +126,10 @@ int main() {
         // Render to window
         glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
         
-        // rotation += 0.001;
-
-        trans = glm::rotate(trans, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 trans(1.0f);
+        trans = glm::translate(trans, glm::vec3(boxTrans.x, boxTrans.y, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
         unsigned int transformLocation = glGetUniformLocation(shaderProgram.id, "transform");
         glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans));
         

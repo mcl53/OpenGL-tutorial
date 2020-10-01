@@ -4,6 +4,7 @@ CXX_FLAGS := -ggdb
 BIN		:= bin
 SRC		:= src
 INCLUDE	:= include
+STANDARD := c++11
 
 LIBRARIES	:= lib
 EXECUTABLE	:= main

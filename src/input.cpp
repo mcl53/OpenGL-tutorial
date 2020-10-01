@@ -1,5 +1,6 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
+#include "input.hpp"
 
 void processClose(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -28,32 +29,16 @@ void processKeyPress(GLFWwindow *window, int key, int scancode, int action, int 
 
 float speed = 0.01;
 
-void processArrowKey(GLFWwindow *window, float *vertices, int valuesPerVertex, int verticesLength) {
+void processArrowKey(GLFWwindow *window, translation &trans) {
 
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        for (int i = 0; i < verticesLength; i++) {
-            if (i % valuesPerVertex == 0) {
-                vertices[i] -= speed;
-            }
-        }
+        trans.x -= speed;
     } else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        for (int i = 0; i < verticesLength; i++) {
-            if (i % valuesPerVertex == 0) {
-                vertices[i] += speed;
-            }
-        }
+        trans.x += speed;
     } else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        for (int i = 0; i < verticesLength; i++) {
-            if (i % valuesPerVertex == 1) {
-                vertices[i] += speed;
-            }
-        }
+        trans.y += speed;
     } else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        for (int i = 0; i < verticesLength; i++) {
-            if (i % valuesPerVertex == 1) {
-                vertices[i] -= speed;
-            }
-        }
+        trans.y -= speed;
     } 
     if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
         speed += 0.001;
