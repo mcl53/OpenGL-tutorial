@@ -5,6 +5,10 @@
 #include "shader.hpp"
 #include "utils.hpp"
 #include <stb/stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <cmath>
 
 int main() {
     GLFWwindow* window = createOpenGLWindow(800, 600, (char*)"Test");
@@ -106,6 +110,11 @@ int main() {
     shaderProgram.setInt("containerTex", 0);
     shaderProgram.setInt("awesomefaceTex", 1);
 
+    glm::mat4 trans(1.0f);
+    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+
+    float rotation = -0.02f;
+
     while (!glfwWindowShouldClose(window)) {
         // Get inputs
         processClose(window);
@@ -122,12 +131,24 @@ int main() {
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
         
+        // rotation += 0.001;
+
+        trans = glm::rotate(trans, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+        unsigned int transformLocation = glGetUniformLocation(shaderProgram.id, "transform");
+        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans));
+        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, container);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, awesomeface);
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glm::mat4 trans2(1.0f);
+        trans2 = glm::translate(trans2, glm::vec3(-0.5f, 0.5f, 0.0f));
+        trans2 = glm::scale(trans2, glm::vec3(abs(sin((float)glfwGetTime())), abs(sin((float)glfwGetTime())), 1.0f));
+        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans2));
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);

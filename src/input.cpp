@@ -70,14 +70,14 @@ void processArrowKey(GLFWwindow *window, float *vertices, int valuesPerVertex, i
 
 void processChangeMixValue(GLFWwindow* window, float &currentMixValue) {
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
-        currentMixValue += 0.1;
+        currentMixValue += 0.02;
         if (currentMixValue > 1.0) {
             currentMixValue = 1.0;
         }
     } else if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
-        currentMixValue -= 0.1;
-        if (currentMixValue < -1.0) {
-            currentMixValue = -1.0;
+        currentMixValue -= 0.02;
+        if (currentMixValue < 0.0) {
+            currentMixValue = 0.0;
         }
     }
 }
