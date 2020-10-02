@@ -27,28 +27,28 @@ void processKeyPress(GLFWwindow *window, int key, int scancode, int action, int 
     }
 }
 
-float speed = 0.01;
+float speed = 0.1;
 
 void processArrowKey(GLFWwindow *window, translation &trans) {
 
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        trans.x -= speed;
-    } else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
         trans.x += speed;
+    } else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        trans.x -= speed;
     } else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
         trans.y += speed;
     } else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
         trans.y -= speed;
     } 
     if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
-        speed += 0.001;
-        if (speed > 0.05f) {
-            speed = 0.05f;
+        speed += 0.01;
+        if (speed > 0.5f) {
+            speed = 0.5f;
         }
     } else if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
-        speed -= 0.001;
-        if (speed < 0.001) {
-            speed = 0.001;
+        speed -= 0.01;
+        if (speed < 0.01) {
+            speed = 0.01;
         }
     }
 }
