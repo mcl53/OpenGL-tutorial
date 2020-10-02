@@ -1,6 +1,7 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
 #include "input.hpp"
+#include <glm/glm.hpp>
 
 void processClose(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -27,18 +28,18 @@ void processKeyPress(GLFWwindow *window, int key, int scancode, int action, int 
     }
 }
 
-float speed = 0.1;
 
-void processArrowKey(GLFWwindow *window, translation &trans) {
 
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        trans.x += speed;
-    } else if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        trans.x -= speed;
-    } else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        trans.y += speed;
-    } else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        trans.y -= speed;
+void processArrowKey(GLFWwindow *window, glm::vec3 &cameraPos, glm::vec3 cameraFront, glm::vec3 cameraUp, float frameTime) {
+    float speed = 2.0f * frameTime;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+    } else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+    } else if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        cameraPos += speed * cameraFront;
+    } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        cameraPos -= speed * cameraFront;
     } 
     if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
         speed += 0.01;
@@ -64,5 +65,26 @@ void processChangeMixValue(GLFWwindow* window, float &currentMixValue) {
         if (currentMixValue < 0.0) {
             currentMixValue = 0.0;
         }
+    }
+}
+
+void mouseInput(GLFWwindow* window, double xpos, double ypos, float &lastX, float &lastY, float &yaw, float &pitch) {
+    float xOffset = xpos - lastX;
+    float yOffset = lastY - ypos;
+
+    lastX = xpos;
+    lastY = ypos;
+
+    const float sensitivity = 0.1;
+    xOffset *= sensitivity;
+    yOffset *= sensitivity;
+
+    yaw += xOffset;
+    pitch += yOffset;
+
+    if (pitch > 89.0) {
+        pitch = 89.0;
+    } else if (pitch < -89.0) {
+        pitch = -89.0;
     }
 }

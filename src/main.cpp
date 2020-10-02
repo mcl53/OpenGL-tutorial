@@ -11,7 +11,10 @@
 #include <cmath>
 
 int main() {
-    GLFWwindow* window = createOpenGLWindow(800, 600, (char*)"Test");
+    int width = 800;
+    int height = 600;
+
+    GLFWwindow* window = createOpenGLWindow(width, height, (char*)"Test");
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -19,7 +22,7 @@ int main() {
         return -1;
     }
 
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, width, height);
     float textureMixValue = 0.5f;
 
     Shader shaderProgram("src/shaders/vertex.txt", "src/shaders/fragment.txt");
@@ -158,33 +161,64 @@ int main() {
     shaderProgram.setInt("awesomefaceTex", 1);
 
     glm::mat4 projection(1.0f);
-    projection = glm::perspective(glm::radians(45.0f), (800.0f / 600.0f), 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(45.0f), ((float)width / (float)height), 0.1f, 100.0f);
 
     glEnable(GL_DEPTH_TEST);
-    
-    translation boxTrans;
-    boxTrans.x = 0.0f;
-    boxTrans.y = 0.0f;
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    glm::vec3 cameraPos(0.0f, 0.0f, 3.0f);
+    glm::vec3 cameraFront(0.0f, 0.0f, -1.0f);
+    glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
+
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
+
+    float yaw = -90.0f;
+    float pitch = 0.0f;
+    float lastX = 400.0f;
+    float lastY = 300.0f;
+    double xpos, ypos;
+
+    glfwSetKeyCallback(window, processKeyPress);
+    float mouseX = 400.0f, mouseY = 300.0f;
+
+    bool firstMouse = true;
 
     while (!glfwWindowShouldClose(window)) {
+        // Time for this frame
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         // Get inputs
         processClose(window);
         processClick(window, clicked);
-        processArrowKey(window, boxTrans);
+        processArrowKey(window, cameraPos, cameraFront, cameraUp, deltaTime);
         processChangeMixValue(window, textureMixValue);
-        glfwSetKeyCallback(window, processKeyPress);
+        glfwGetCursorPos(window, &xpos, &ypos);
+        if (firstMouse) {
+            lastX = xpos;
+            lastY = ypos;
+            firstMouse = false;
+        }
+        mouseInput(window, xpos, ypos, lastX, lastY, yaw, pitch);
         shaderProgram.setFloat("textureMix", textureMixValue);
 
         // Render to window
         glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glm::vec3 direction;
+        direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        direction.y = sin(glm::radians(pitch));
+        direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+        cameraFront = glm::normalize(direction);
+
         int modelLoc = glGetUniformLocation(shaderProgram.id, "model");
         
         int viewLoc = glGetUniformLocation(shaderProgram.id, "view");
-        glm::mat4 view(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
-        view = glm::translate(view, glm::vec3(boxTrans.x, boxTrans.y, 0.0f));
+        glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         int projectionLoc = glGetUniformLocation(shaderProgram.id, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
