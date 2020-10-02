@@ -109,6 +109,15 @@ int main() {
     shaderProgram.use();
     shaderProgram.setInt("containerTex", 0);
     shaderProgram.setInt("awesomefaceTex", 1);
+
+    glm::mat4 model(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    glm::mat4 view(1.0f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+
+    glm::mat4 projection(1.0f);
+    projection = glm::perspective(glm::radians(45.0f), (800.0f / 600.0f), 0.1f, 100.0f);
     
     translation boxTrans;
     boxTrans.x = 0.0f;
@@ -126,12 +135,19 @@ int main() {
         // Render to window
         glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glm::mat4 position(1.0f);
+        position = glm::translate(position, glm::vec3(boxTrans.x, boxTrans.y, 0.0f));
+        int positionLoc = glGetUniformLocation(shaderProgram.id, "position");
+        glUniformMatrix4fv(positionLoc, 1, GL_FALSE, glm::value_ptr(position));
+
         
-        glm::mat4 trans(1.0f);
-        trans = glm::translate(trans, glm::vec3(boxTrans.x, boxTrans.y, 0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        unsigned int transformLocation = glGetUniformLocation(shaderProgram.id, "transform");
-        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans));
+        int modelLoc = glGetUniformLocation(shaderProgram.id, "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        int viewLoc = glGetUniformLocation(shaderProgram.id, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        int projectionLoc = glGetUniformLocation(shaderProgram.id, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, container);
@@ -139,12 +155,6 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, awesomeface);
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        glm::mat4 trans2(1.0f);
-        trans2 = glm::translate(trans2, glm::vec3(-0.5f, 0.5f, 0.0f));
-        trans2 = glm::scale(trans2, glm::vec3(abs(sin((float)glfwGetTime())), abs(sin((float)glfwGetTime())), 1.0f));
-        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, glm::value_ptr(trans2));
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
