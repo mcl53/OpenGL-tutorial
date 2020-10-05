@@ -161,7 +161,7 @@ int main() {
     shaderProgram.setInt("awesomefaceTex", 1);
 
     glm::mat4 projection(1.0f);
-    projection = glm::perspective(glm::radians(45.0f), ((float)width / (float)height), 0.1f, 100.0f);
+    float fov = 45.0f;
 
     glEnable(GL_DEPTH_TEST);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -178,8 +178,12 @@ int main() {
     float lastX = 400.0f;
     float lastY = 300.0f;
     double xpos, ypos;
+    float zoom = 45.0f;
+    void* pZoom = &zoom;
+    glfwSetWindowUserPointer(window, pZoom);
 
     glfwSetKeyCallback(window, processKeyPress);
+    glfwSetScrollCallback(window, processScroll);
     float mouseX = 400.0f, mouseY = 300.0f;
 
     bool firstMouse = true;
@@ -202,6 +206,8 @@ int main() {
             firstMouse = false;
         }
         mouseInput(window, xpos, ypos, lastX, lastY, yaw, pitch);
+        fov = zoom;
+        projection = glm::perspective(glm::radians(fov), ((float)width / (float)height), 0.1f, 100.0f);
         shaderProgram.setFloat("textureMix", textureMixValue);
 
         // Render to window

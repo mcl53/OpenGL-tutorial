@@ -13,3 +13,5 @@ void processChangeMixValue(GLFWwindow* window, float &currentMixValue);
 void mouseInputWrapper(GLFWwindow* window, double xpos, double ypos);
 
 void mouseInput(GLFWwindow* window, double xpos, double ypos, float &lastX, float &lastY, float &yaw, float &pitch);
+
+void processScroll(GLFWwindow* window, double xoffset, double yoffset);

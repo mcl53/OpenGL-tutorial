@@ -88,3 +88,14 @@ void mouseInput(GLFWwindow* window, double xpos, double ypos, float &lastX, floa
         pitch = -89.0;
     }
 }
+
+void processScroll(GLFWwindow* window, double xoffset, double yoffset) {
+    void* vZoom = glfwGetWindowUserPointer(window);
+    float* pZoom = {static_cast<float*>(vZoom)};
+    *pZoom -= (float)yoffset;
+    if (*pZoom < 1.0f) {
+        *pZoom = 1.0f;
+    } else if (*pZoom > 45.0f) {
+        *pZoom = 45.0f;
+    }
+}
