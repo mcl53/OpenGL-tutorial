@@ -5,7 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "camera.hpp"
 
-Camera::Camera(float screenWidth, float screenHeight, int up, int down, int left, int right, float mouseStartX, float mouseStartY, bool constrainPitch) {
+Camera::Camera(float screenWidth, float screenHeight, int up, int down, int left, int right, float mouseStartX, float mouseStartY, bool constrainPitch, bool fpsStyle) {
     width = screenWidth;
     height = screenHeight;
     upKey = up;
@@ -15,6 +15,7 @@ Camera::Camera(float screenWidth, float screenHeight, int up, int down, int left
     lastX = mouseStartX;
     lastY = mouseStartY;
     pitchConstrained = constrainPitch;
+    fps = fpsStyle;
 
     firstMouse = true;
 
@@ -38,14 +39,19 @@ Camera::Camera(float screenWidth, float screenHeight, int up, int down, int left
 
 void Camera::movePosition(GLFWwindow *window, float frameTime) {
     float ms = speed * frameTime;
+    glm::vec3 front = cameraFront;
+    if (fps) {
+        // Cannot change the y height if the camera is an fps style camera
+        front.y = 0.0f;
+    }
     if (glfwGetKey(window, leftKey) == GLFW_PRESS) {
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+        cameraPos -= glm::normalize(glm::cross(front, cameraUp)) * speed;
     } else if (glfwGetKey(window, rightKey) == GLFW_PRESS) {
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
+        cameraPos += glm::normalize(glm::cross(front, cameraUp)) * speed;
     } else if (glfwGetKey(window, upKey) == GLFW_PRESS) {
-        cameraPos += speed * cameraFront;
+        cameraPos += speed * front;
     } else if (glfwGetKey(window, downKey) == GLFW_PRESS) {
-        cameraPos -= speed * cameraFront;
+        cameraPos -= speed * front;
     } 
 }
 

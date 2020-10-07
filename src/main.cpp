@@ -173,7 +173,7 @@ int main() {
     double xpos, ypos;
 
 
-    Camera camera((float)width, (float)height, GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, ((float)width)/2, ((float)height)/2, true);
+    Camera camera((float)width, (float)height, GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, ((float)width)/2, ((float)height)/2, true, true);
     Camera* pCamera = &camera;
     glfwSetWindowUserPointer(window, pCamera);
     glfwSetKeyCallback(window, processKeyPress);

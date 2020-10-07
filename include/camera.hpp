@@ -9,7 +9,7 @@ class Camera {
 
 public:
 
-    Camera(float screenWidth, float screenHeight, int up, int down, int left, int right, float mouseStartX, float mouseStartY, bool constrainPitch);
+    Camera(float screenWidth, float screenHeight, int up, int down, int left, int right, float mouseStartX, float mouseStartY, bool constrainPitch, bool fpsStyle);
 
     void movePosition(GLFWwindow *window, float frameTime);
     void moveDirection(GLFWwindow* window, double xpos, double ypos);
@@ -20,7 +20,7 @@ public:
 
 // private:
     int upKey, downKey, leftKey, rightKey;
-    bool pitchConstrained;
+    bool pitchConstrained, fps;
     float width, height;
     double xpos, ypos;
 
