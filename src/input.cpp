@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 #include "input.hpp"
 #include <glm/glm.hpp>
+#include "camera.hpp"
 
 void processClose(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
@@ -90,12 +91,7 @@ void mouseInput(GLFWwindow* window, double xpos, double ypos, float &lastX, floa
 }
 
 void processScroll(GLFWwindow* window, double xoffset, double yoffset) {
-    void* vZoom = glfwGetWindowUserPointer(window);
-    float* pZoom = {static_cast<float*>(vZoom)};
-    *pZoom -= (float)yoffset;
-    if (*pZoom < 1.0f) {
-        *pZoom = 1.0f;
-    } else if (*pZoom > 45.0f) {
-        *pZoom = 45.0f;
-    }
+    void* vCamera = glfwGetWindowUserPointer(window);
+    Camera* pCamera = {static_cast<Camera*>(vCamera)};
+    pCamera->zoom(xoffset, yoffset);
 }
