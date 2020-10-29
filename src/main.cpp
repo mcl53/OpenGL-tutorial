@@ -26,24 +26,15 @@ int main() {
     glViewport(0, 0, width, height);
     float textureMixValue = 0.5f;
 
-    Shader shaderProgram("src/shaders/vertex.txt", "src/shaders/fragment.txt");
-    shaderProgram.setFloat("textureMix", textureMixValue);
+    //texture shader
+    Shader textureShader("src/shaders/tex_vertex.txt", "src/shaders/tex_fragment.txt");
+    textureShader.setFloat("textureMix", textureMixValue);
+
+    //lighting shader
+    Shader lightingShader("src/shaders/light_vertex.txt", "src/shaders/light_fragment.txt");
 
     // Initialise state variables
     bool clicked = false;
-
-    float vertices1[] = {
-        // location        // texture coords
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
-        -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, // top left
-        0.5f, 0.5f, 0.0f, 1.0f, 1.0f, // top right
-        0.5f, -0.5f, 0.0f, 1.0f, 0.0f // bottom right
-    };
-
-    unsigned int indices[] = {
-        0, 1, 2,
-        0, 2, 3
-    };
 
     float cubeVertices[] = {
         -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
@@ -89,18 +80,7 @@ int main() {
         -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
     };
 
-    glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f, 2.0f, -2.5f),
-        glm::vec3(1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f)
-    };
+    glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
     // load in texture
     stbi_set_flip_vertically_on_load(true);
@@ -156,10 +136,26 @@ int main() {
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
+    // lighting
+    unsigned int lightVAO;
+    glGenVertexArrays(1, &lightVAO);
+    glBindVertexArray(lightVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glm::vec3 lightColour(1.0f, 1.0f, 1.0f);
+    glm::vec3 objectColour(1.0f, 0.5f, 0.31f);
+    textureShader.use();
+    textureShader.setVec3("lightColour", lightColour);
+    textureShader.setVec3("objectColour", objectColour);
+    lightingShader.use();
+    lightingShader.setVec3("lightColour", lightColour);
+
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    shaderProgram.use();
-    shaderProgram.setInt("containerTex", 0);
-    shaderProgram.setInt("awesomefaceTex", 1);
+    textureShader.use();
+    textureShader.setInt("containerTex", 0);
+    textureShader.setInt("awesomefaceTex", 1);
 
     glm::mat4 projection(1.0f);
     float fov = 45.0f;
@@ -179,6 +175,14 @@ int main() {
     glfwSetKeyCallback(window, processKeyPress);
     glfwSetScrollCallback(window, processScroll);
 
+    int modelLoc = glGetUniformLocation(textureShader.id, "model");
+    int viewLoc = glGetUniformLocation(textureShader.id, "view");
+    int projectionLoc = glGetUniformLocation(textureShader.id, "projection");
+
+    int lightModelLoc = glGetUniformLocation(lightingShader.id, "model");
+    int lightViewLoc = glGetUniformLocation(lightingShader.id, "view");
+    int lightProjLoc = glGetUniformLocation(lightingShader.id, "projection");
+
     while (!glfwWindowShouldClose(window)) {
         // Time for this frame
         float currentFrame = glfwGetTime();
@@ -188,40 +192,45 @@ int main() {
         // Get inputs
         processClose(window);
         processClick(window, clicked);
-        camera.movePosition(window, deltaTime);
         processChangeMixValue(window, textureMixValue);
         glfwGetCursorPos(window, &xpos, &ypos);
+        camera.movePosition(window, deltaTime);
         camera.moveDirection(window, xpos, ypos);
         camera.update();
         
-        shaderProgram.setFloat("textureMix", textureMixValue);
+        textureShader.setFloat("textureMix", textureMixValue);
 
         // Render to window
         glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        int modelLoc = glGetUniformLocation(shaderProgram.id, "model");
-        int viewLoc = glGetUniformLocation(shaderProgram.id, "view");
-        int projectionLoc = glGetUniformLocation(shaderProgram.id, "projection");
-        shaderProgram.setMat4("view", camera.getView());
-        glm::mat4 cProj = camera.getProjection();
-        shaderProgram.setMat4("projection", camera.getProjection());
+
         
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, container);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, awesomeface);
+        textureShader.use();
         glBindVertexArray(VAO);
 
-        for (int i = 0; i < 10; i++) {
-            glm::mat4 model(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-        // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        // draw textured cube
+        glm::mat4 model(1.0f);
+        textureShader.setMat4("projection", camera.getProjection());
+        textureShader.setMat4("view", camera.getView());
+        textureShader.setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // draw light source
+        glm::mat4 lightModel(1.0f);
+        lightModel = glm::translate(lightModel, lightPos);
+        lightModel = glm::scale(lightModel, glm::vec3(0.2f));
+
+        lightingShader.use();
+        lightingShader.setMat4("projection", camera.getProjection());
+        lightingShader.setMat4("view", camera.getView());
+        lightingShader.setMat4("model", lightModel);
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
         glBindVertexArray(0);
 
