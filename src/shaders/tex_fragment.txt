@@ -2,11 +2,32 @@
 out vec4 FragColour;
 in vec3 drawColour;
 in vec2 TextureCoords;
+in vec3 Normal;
+in vec3 FragPos;
 
 uniform vec3 lightColour;
 uniform vec3 objectColour;
+uniform vec3 lightPos;
+uniform vec3 viewPos;
 
 uniform float textureMix;
 void main() {
-  FragColour = vec4(lightColour * objectColour, 1.0f);
+  float ambientStrength = 0.1f;
+  vec3 ambient = ambientStrength * lightColour;
+
+  vec3 norm = normalize(Normal);
+  vec3 lightDir = normalize(lightPos - FragPos);
+  float diff = max(dot(norm, lightDir), 0.0f);
+
+  float specularStrength = 0.5f;
+  vec3 viewDir = normalize(viewPos - FragPos);
+  vec3 reflectDir = reflect(-lightDir, norm);
+  float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 32);
+  vec3 specular = specularStrength * spec * lightColour;
+
+  vec3 diffuse = diff * lightColour;
+
+  vec3 finalColour = (ambient + diffuse + specular) * objectColour;
+
+  FragColour = vec4(finalColour, 1.0f);
 }

@@ -9,7 +9,7 @@ class Camera {
 
 public:
 
-    Camera(float screenWidth, float screenHeight, int up, int down, int left, int right, float mouseStartX, float mouseStartY, bool constrainPitch, bool fpsStyle);
+    Camera(float screenWidth, float screenHeight, int forward, int back, int left, int right, int up, int down, float mouseStartX, float mouseStartY, bool constrainPitch, bool fpsStyle);
 
     void movePosition(GLFWwindow *window, float frameTime);
     void moveDirection(GLFWwindow* window, double xpos, double ypos);
@@ -19,7 +19,7 @@ public:
     glm::mat4 getView();
 
 // private:
-    int upKey, downKey, leftKey, rightKey;
+    int forwardKey, backKey, leftKey, rightKey, upKey, downKey;
     bool pitchConstrained, fps;
     float width, height;
     double xpos, ypos;
