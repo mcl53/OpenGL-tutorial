@@ -24,11 +24,9 @@ int main() {
     }
 
     glViewport(0, 0, width, height);
-    float textureMixValue = 0.5f;
 
     //texture shader
     Shader textureShader("src/shaders/tex_vertex.txt", "src/shaders/tex_fragment.txt");
-    textureShader.setFloat("textureMix", textureMixValue);
 
     //lighting shader
     Shader lightingShader("src/shaders/light_vertex.txt", "src/shaders/light_fragment.txt");
@@ -89,35 +87,8 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    int tWidth, tHeight, tNrChannels;
-    unsigned int container, awesomeface;
-    unsigned char* containerData = stbi_load("textures/container.jpg", &tWidth, &tHeight, &tNrChannels, 0);
-    if (containerData) {
-        glGenTextures(1, &container);
-        glBindTexture(GL_TEXTURE_2D, container);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tWidth, tHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, containerData);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(containerData);
-    } else {
-        std::cout << "Failed to load texture" << std::endl;
-    }
-
-    unsigned char* awesomefaceData = stbi_load("textures/awesomeface.png", &tWidth, &tHeight, &tNrChannels, 0);
-    if (awesomefaceData) {
-        glGenTextures(1, &awesomeface);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, awesomeface);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tWidth, tHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, awesomefaceData);
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
+    
+    unsigned int container = loadTexture("textures/container2.png");
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -129,10 +100,13 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_DYNAMIC_DRAW);
 
+    // Vertices
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // Normals
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // Texture Coordinates
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
@@ -148,17 +122,17 @@ int main() {
     glEnableVertexAttribArray(0);
 
     glm::vec3 lightColour(1.0f, 1.0f, 1.0f);
-    glm::vec3 objectColour(1.0f, 0.5f, 0.31f);
+    glm::vec3 objectColour(1.0f, 1.0f, 1.0f);
+
     textureShader.use();
-    textureShader.setVec3("lightColour", lightColour);
-    textureShader.setVec3("objectColour", objectColour);
-    lightingShader.use();
-    lightingShader.setVec3("lightColour", lightColour);
+    // textureShader.setVec3("material.ambient", objectColour);
+    textureShader.setInt("material.diffuse", 0);
+    textureShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    textureShader.setFloat("material.shininess", 64.0f);
 
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    textureShader.use();
-    textureShader.setInt("containerTex", 0);
-    textureShader.setInt("awesomefaceTex", 1);
+    // textureShader.setInt("containerTex", 0);
+    // textureShader.setInt("awesomefaceTex", 1);
 
     glm::mat4 projection(1.0f);
     float fov = 45.0f;
@@ -172,7 +146,7 @@ int main() {
     double xpos, ypos;
 
 
-    Camera camera((float)width, (float)height, GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_Z, ((float)width)/2, ((float)height)/2, true, true);
+    Camera camera((float)width, (float)height, GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, ((float)width)/2, ((float)height)/2, true, true);
     Camera* pCamera = &camera;
     glfwSetWindowUserPointer(window, pCamera);
     glfwSetKeyCallback(window, processKeyPress);
@@ -195,30 +169,23 @@ int main() {
         // Get inputs
         processClose(window);
         processClick(window, clicked);
-        processChangeMixValue(window, textureMixValue);
         glfwGetCursorPos(window, &xpos, &ypos);
         camera.movePosition(window, deltaTime);
         camera.moveDirection(window, xpos, ypos);
         camera.update();
-        
-        textureShader.setFloat("textureMix", textureMixValue);
 
         // Render to window
         glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-        
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, container);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, awesomeface);
+        // glActiveTexture(GL_TEXTURE1);
+        // glBindTexture(GL_TEXTURE_2D, awesomeface);
         textureShader.use();
-        glBindVertexArray(VAO);
+        // const float twoPiOverThree = glm::two_pi<float>() / 3;
 
         glm::mat4 lightModel(1.0f);
-        glm::vec3 lightTrans = glm::vec3(1.5 * glm::cos(currentFrame), 1.0f, 1.5 * glm::sin(currentFrame));
-        // std::cout << lightTrans[0] << " " << lightTrans[2] << std::endl;
+        glm::vec3 lightTrans = glm::vec3(1.5 * glm::cos(currentFrame), 1.5f, 1.5 * glm::sin(currentFrame));
+        // lightColour = glm::vec3(sin(currentFrame), sin(currentFrame + twoPiOverThree), sin(currentFrame + 2 * twoPiOverThree));
 
         // draw textured cube
         glm::mat4 model(1.0f);
@@ -226,7 +193,14 @@ int main() {
         textureShader.setMat4("view", camera.getView());
         textureShader.setMat4("model", model);
         textureShader.setVec3("viewPos", camera.cameraPos);
-        textureShader.setVec3("lightPos", lightTrans);
+        textureShader.setVec3("light.lightPos", lightTrans);
+        textureShader.setVec3("light.ambient", lightColour * glm::vec3(0.2f, 0.2f, 0.2f));
+        textureShader.setVec3("light.diffuse", lightColour * glm::vec3(0.5f, 0.5f, 0.5f));
+        textureShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, container);
+        glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // draw light source
@@ -235,6 +209,7 @@ int main() {
         lightModel = glm::scale(lightModel, glm::vec3(0.2f));
 
         lightingShader.use();
+        lightingShader.setVec3("lightColour", lightColour);
         lightingShader.setMat4("projection", camera.getProjection());
         lightingShader.setMat4("view", camera.getView());
         lightingShader.setMat4("model", lightModel);
