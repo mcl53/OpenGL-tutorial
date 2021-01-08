@@ -77,6 +77,19 @@ int main() {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
     };
 
+    glm::vec3 cubePositions[] = {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f, 2.0f, -2.5f),
+        glm::vec3(1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f)
+    };
+
     glm::vec3 lightPos(1.5f, 1.0f, 1.5f);
 
     // load in texture
@@ -125,6 +138,10 @@ int main() {
     textureShader.setInt("material.specular", 1);
     textureShader.setFloat("material.shininess", 64.0f);
 
+    textureShader.setFloat("light.constant", 1.0f);
+    textureShader.setFloat("light.linear", 0.022f);
+    textureShader.setFloat("light.quadratic", 0.0019f);
+
     glm::mat4 projection(1.0f);
     float fov = 45.0f;
 
@@ -163,33 +180,44 @@ int main() {
 
         textureShader.use();
 
-        glm::mat4 lightModel(1.0f);
-        glm::vec3 lightTrans = glm::vec3(1.5 * glm::cos(currentFrame), 1.5f, 1.5 * glm::sin(currentFrame));
-
-        // Set shader uniform variables for the current frame for cube object
-        glm::mat4 model(1.0f);
+        // Set vertex shader uniform variables
         textureShader.setMat4("projection", camera.getProjection());
         textureShader.setMat4("view", camera.getView());
-        textureShader.setMat4("model", model);
+
+        // Set fragment shader uniform variables
+        textureShader.setVec3("light.position", camera.cameraPos);
+        textureShader.setVec3("light.direction", camera.cameraFront);
+        textureShader.setFloat("light.cutoff", glm::cos(glm::radians(12.5f)));
+        textureShader.setFloat("light.outerCutoff", glm::cos(glm::radians(17.5f)));
+
         textureShader.setVec3("viewPos", camera.cameraPos);
-        textureShader.setVec3("light.lightPos", lightTrans);
-        textureShader.setVec3("light.ambient", lightColour * glm::vec3(0.2f, 0.2f, 0.2f));
-        textureShader.setVec3("light.diffuse", lightColour * glm::vec3(0.5f, 0.5f, 0.5f));
-        textureShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+        textureShader.setVec3("light.ambient", lightColour * glm::vec3(0.2f));
+        textureShader.setVec3("light.diffuse", lightColour * glm::vec3(0.5f));
+        textureShader.setVec3("light.specular", glm::vec3(1.0f));
 
         // Bind and draw cube object
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, container);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, containerSpecular);
+
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // Container party
+        for (int i = 0; i < 10; i++) {
+            glm::mat4 model(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            textureShader.setMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 
         // Move and scale light object
-        lightModel = glm::translate(lightModel, lightTrans);
+        glm::mat4 lightModel(1.0f);
+        lightModel = glm::translate(lightModel, lightPos);
         lightModel = glm::scale(lightModel, glm::vec3(0.2f));
 
-        // Set shader uniform variables for the current frame for light object
+        // // Set shader uniform variables for the current frame for light object
         lightingShader.use();
         lightingShader.setVec3("lightColour", lightColour);
         lightingShader.setMat4("projection", camera.getProjection());
@@ -197,8 +225,8 @@ int main() {
         lightingShader.setMat4("model", lightModel);
 
         // Draw light object
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // glBindVertexArray(lightVAO);
+        // glDrawArrays(GL_TRIANGLES, 0, 36);
 
         // Clear vertex array
         glBindVertexArray(0);

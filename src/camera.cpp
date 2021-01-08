@@ -23,14 +23,14 @@ Camera::Camera(float screenWidth, float screenHeight, int forward, int back, int
 
     yaw = -90.0f;
     pitch = 0.0f;
-    lastX = 400.0f;
-    lastY = 300.0f;
+    // lastX = 400.0f;
+    // lastY = 300.0f;
     zoomValue = 45.0f;
 
     speed = 0.1f;
     sensitivity = 0.1f;
     
-    cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+    cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
     cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -118,7 +118,8 @@ void Camera::updateCameraFront() {
 
 void Camera::updateView() {
     glm::mat4 focus = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    view = glm::translate(focus, glm::vec3(0.0f, 0.0f, -3.0f));
+    // view = glm::translate(focus, cameraFront);
+    view = focus;
 }
 
 void Camera::update() {
