@@ -4,6 +4,7 @@
 #include <input.hpp>
 #include "shader.hpp"
 #include "utils.hpp"
+#include "textures.hpp"
 #include <stb/stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,10 +19,7 @@ int main() {
     GLFWwindow* window = createOpenGLWindow(width, height, (char*)"Test");
     glfwMakeContextCurrent(window);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cout << "Failed to initialise GLAD" << std::endl;
-        return -1;
-    }
+    checkGLAD();
 
     glViewport(0, 0, width, height);
 
@@ -82,11 +80,7 @@ int main() {
     glm::vec3 lightPos(1.5f, 1.0f, 1.5f);
 
     // load in texture
-    stbi_set_flip_vertically_on_load(true);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    setTextureParameters();
     
     unsigned int container = loadTexture("textures/container2.png");
 
@@ -113,7 +107,7 @@ int main() {
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeIndices), cubeIndices, GL_STATIC_DRAW);
 
-    // lighting
+    // Buffer the same coordinates for light - these will be translated to a different point in the scene later
     unsigned int lightVAO;
     glGenVertexArrays(1, &lightVAO);
     glBindVertexArray(lightVAO);
@@ -121,18 +115,14 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    // Define the colour of the light and the object (without textures)
     glm::vec3 lightColour(1.0f, 1.0f, 1.0f);
-    glm::vec3 objectColour(1.0f, 1.0f, 1.0f);
+    // glm::vec3 objectColour(1.0f, 1.0f, 1.0f);
 
     textureShader.use();
-    // textureShader.setVec3("material.ambient", objectColour);
     textureShader.setInt("material.diffuse", 0);
     textureShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
     textureShader.setFloat("material.shininess", 64.0f);
-
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    // textureShader.setInt("containerTex", 0);
-    // textureShader.setInt("awesomefaceTex", 1);
 
     glm::mat4 projection(1.0f);
     float fov = 45.0f;
@@ -178,16 +168,12 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.4f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // glActiveTexture(GL_TEXTURE1);
-        // glBindTexture(GL_TEXTURE_2D, awesomeface);
         textureShader.use();
-        // const float twoPiOverThree = glm::two_pi<float>() / 3;
 
         glm::mat4 lightModel(1.0f);
         glm::vec3 lightTrans = glm::vec3(1.5 * glm::cos(currentFrame), 1.5f, 1.5 * glm::sin(currentFrame));
-        // lightColour = glm::vec3(sin(currentFrame), sin(currentFrame + twoPiOverThree), sin(currentFrame + 2 * twoPiOverThree));
 
-        // draw textured cube
+        // Set shader uniform variables for the current frame for cube object
         glm::mat4 model(1.0f);
         textureShader.setMat4("projection", camera.getProjection());
         textureShader.setMat4("view", camera.getView());
@@ -198,24 +184,28 @@ int main() {
         textureShader.setVec3("light.diffuse", lightColour * glm::vec3(0.5f, 0.5f, 0.5f));
         textureShader.setVec3("light.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
+        // Bind and draw cube object
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, container);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        // draw light source
-        // lightModel = glm::translate(lightModel, lightPos);
+        // Move and scale light object
         lightModel = glm::translate(lightModel, lightTrans);
         lightModel = glm::scale(lightModel, glm::vec3(0.2f));
 
+        // Set shader uniform variables for the current frame for light object
         lightingShader.use();
         lightingShader.setVec3("lightColour", lightColour);
         lightingShader.setMat4("projection", camera.getProjection());
         lightingShader.setMat4("view", camera.getView());
         lightingShader.setMat4("model", lightModel);
+
+        // Draw light object
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
+        // Clear vertex array
         glBindVertexArray(0);
 
         // Check and call events and swap buffers
