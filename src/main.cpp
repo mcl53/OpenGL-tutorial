@@ -83,6 +83,7 @@ int main() {
     setTextureParameters();
     
     unsigned int container = loadTexture("textures/container2.png");
+    unsigned int containerSpecular = loadTexture("textures/container2_specular.png");
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -121,7 +122,7 @@ int main() {
 
     textureShader.use();
     textureShader.setInt("material.diffuse", 0);
-    textureShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+    textureShader.setInt("material.specular", 1);
     textureShader.setFloat("material.shininess", 64.0f);
 
     glm::mat4 projection(1.0f);
@@ -141,14 +142,6 @@ int main() {
     glfwSetWindowUserPointer(window, pCamera);
     glfwSetKeyCallback(window, processKeyPress);
     glfwSetScrollCallback(window, processScroll);
-
-    int modelLoc = glGetUniformLocation(textureShader.id, "model");
-    int viewLoc = glGetUniformLocation(textureShader.id, "view");
-    int projectionLoc = glGetUniformLocation(textureShader.id, "projection");
-
-    int lightModelLoc = glGetUniformLocation(lightingShader.id, "model");
-    int lightViewLoc = glGetUniformLocation(lightingShader.id, "view");
-    int lightProjLoc = glGetUniformLocation(lightingShader.id, "projection");
 
     while (!glfwWindowShouldClose(window)) {
         // Time for this frame
@@ -187,6 +180,8 @@ int main() {
         // Bind and draw cube object
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, container);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, containerSpecular);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
