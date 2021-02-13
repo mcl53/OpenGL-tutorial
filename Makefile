@@ -1,3 +1,5 @@
+C := clang
+
 CXX	:= clang++
 CXX_FLAGS := -ggdb
 
@@ -5,6 +7,7 @@ BIN		:= bin
 SRC		:= src
 INCLUDE	:= include
 STANDARD := c++11
+OBJECT := object
 
 LIBRARIES	:= lib
 EXECUTABLE	:= main
@@ -17,7 +20,7 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -x c src/glad.c -x c++ $^ -o $@ -lglfw
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -std=$(STANDARD) $(OBJECT)/*.o -x c++ $^ -o $@ -lglfw
 
 clean:
 	-rm $(BIN)/*
