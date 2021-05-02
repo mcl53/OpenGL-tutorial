@@ -23,8 +23,6 @@ Camera::Camera(float screenWidth, float screenHeight, int forward, int back, int
 
     yaw = -90.0f;
     pitch = 0.0f;
-    // lastX = 400.0f;
-    // lastY = 300.0f;
     zoomValue = 45.0f;
 
     speed = 0.1f;

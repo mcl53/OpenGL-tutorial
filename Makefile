@@ -20,7 +20,7 @@ run: clean all
 	./$(BIN)/$(EXECUTABLE)
 
 $(BIN)/$(EXECUTABLE): $(SRC)/*.cpp
-	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -std=$(STANDARD) $(OBJECT)/*.o -x c++ $^ -o $@ -lglfw
+	$(CXX) $(CXX_FLAGS) -I$(INCLUDE) -std=$(STANDARD) $(OBJECT)/*.o -x c++ $^ -o $@ -lglfw -lassimp
 
 clean:
 	-rm $(BIN)/*

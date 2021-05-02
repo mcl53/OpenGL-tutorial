@@ -5,6 +5,7 @@
 #include "shader.hpp"
 #include "utils.hpp"
 #include "textures.hpp"
+#include "model.hpp"
 #include <stb/stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,8 +17,8 @@
 #include <assimp/postprocess.h>
 
 int main() {
-    int width = 800;
-    int height = 600;
+    int width = 1366;
+    int height = 768;
 
     GLFWwindow* window = createOpenGLWindow(width, height, (char*)"Test");
     glfwMakeContextCurrent(window);
@@ -80,19 +81,6 @@ int main() {
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
     };
 
-    glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f, 2.0f, -2.5f),
-        glm::vec3(1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f)
-    };
-
     glm::vec3 pointLightPositions[] = {
         glm::vec3(0.7f, 0.2f, 2.0f),
         glm::vec3(2.3f, -3.3f, -4.0f),
@@ -102,9 +90,6 @@ int main() {
 
     // load in texture
     setTextureParameters();
-    
-    unsigned int container = loadTexture("textures/container2.png");
-    unsigned int containerSpecular = loadTexture("textures/container2_specular.png");
 
     unsigned int VAO, VBO, EBO;
     glGenVertexArrays(1, &VAO);
@@ -197,6 +182,8 @@ int main() {
     glm::mat4 projection(1.0f);
     float fov = 45.0f;
 
+    stbi_set_flip_vertically_on_load(true);
+
     glEnable(GL_DEPTH_TEST);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -205,12 +192,14 @@ int main() {
 
     double xpos, ypos;
 
-
     Camera camera((float)width, (float)height, GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_SPACE, GLFW_KEY_LEFT_SHIFT, ((float)width)/2, ((float)height)/2, true, true);
     Camera* pCamera = &camera;
     glfwSetWindowUserPointer(window, pCamera);
     glfwSetKeyCallback(window, processKeyPress);
     glfwSetScrollCallback(window, processScroll);
+
+    // Import backpack object
+    Model backpack((char*)"textures/backpack/backpack.obj");
 
     while (!glfwWindowShouldClose(window)) {
         // Time for this frame
@@ -242,29 +231,13 @@ int main() {
 
         textureShader.setVec3("viewPos", camera.cameraPos);
 
-        // Bind and draw cube object
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, container);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, containerSpecular);
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+        model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+        textureShader.setMat4("model", model);
+        backpack.draw(textureShader);
 
-        glBindVertexArray(VAO);
-        // Container party
-        for (int i = 0; i < 10; i++) {
-            glm::mat4 model(1.0f);
-            model = glm::translate(model, cubePositions[i]);
-            float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-            textureShader.setMat4("model", model);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
-
-        // Move and scale light object
-        // glm::mat4 lightModel(1.0f);
-        // lightModel = glm::translate(lightModel, lightPos);
-        // lightModel = glm::scale(lightModel, glm::vec3(0.2f));
-
-        // // Set shader uniform variables for the current frame for light object
+        // Set shader uniform variables for the current frame for light object
         lightingShader.use();
         lightingShader.setVec3("lightColour", lightColour);
         lightingShader.setMat4("projection", camera.getProjection());
