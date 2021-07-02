@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <assimp/scene.h>
-#include <vector>
 #include "mesh.hpp"
 #include "texture_structs.hpp"
 #include "shader.hpp"

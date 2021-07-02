@@ -25,7 +25,7 @@ Camera::Camera(float screenWidth, float screenHeight, int forward, int back, int
     pitch = 0.0f;
     zoomValue = 45.0f;
 
-    speed = 0.1f;
+    speed = 6.0f;
     sensitivity = 0.1f;
     
     cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
@@ -45,22 +45,22 @@ void Camera::movePosition(GLFWwindow *window, float frameTime) {
         front.y = 0.0f;
 
         if (glfwGetKey(window, upKey) == GLFW_PRESS) {
-            cameraPos.y += speed;
-            cameraFront.y += speed;
+            cameraPos.y += ms;
+            cameraFront.y += ms;
         } else if (glfwGetKey(window, downKey) == GLFW_PRESS) {
-            cameraPos.y -= speed;
-            cameraFront.y -= speed;
+            cameraPos.y -= ms;
+            cameraFront.y -= ms;
         }
 
     }
     if (glfwGetKey(window, leftKey) == GLFW_PRESS) {
-        cameraPos -= glm::normalize(glm::cross(front, cameraUp)) * speed;
+        cameraPos -= glm::normalize(glm::cross(front, cameraUp)) * ms;
     } else if (glfwGetKey(window, rightKey) == GLFW_PRESS) {
-        cameraPos += glm::normalize(glm::cross(front, cameraUp)) * speed;
+        cameraPos += glm::normalize(glm::cross(front, cameraUp)) * ms;
     } else if (glfwGetKey(window, forwardKey) == GLFW_PRESS) {
-        cameraPos += speed * front;
+        cameraPos += ms * front;
     } else if (glfwGetKey(window, backKey) == GLFW_PRESS) {
-        cameraPos -= speed * front;
+        cameraPos -= ms * front;
     }
 }
 

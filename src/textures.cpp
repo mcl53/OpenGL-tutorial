@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <glad/glad.h>
-#include <stb/stb_image.h>
+#include <stb_image.h>
 
 unsigned int loadTexture(const char* path) {
     unsigned int textureID;

@@ -6,7 +6,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <vector>
-#include <stb/stb_image.h>
+#include <stb_image.h>
 #include "shader.hpp"
 #include "texture_structs.hpp"
 #include "textures.hpp"

@@ -1,0 +1,29 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Build application",
+			"command": ".\\compile.ps1",
+			"args": [
+				"-rootPath",
+				"${workspaceFolder}"
+			]
+		},
+		{
+			"type": "shell",
+			"label": "Run application",
+			"command": ".\\run.ps1"
+		},
+		{
+			"label": "Build and run",
+			"dependsOn": [
+				"Build application",
+				"Run application"
+			],
+			"dependsOrder": "sequence",
+			"group": "build",
+			"problemMatcher": []
+		}
+	]
+}

@@ -1,12 +1,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <input.hpp>
+#include "input.hpp"
 #include "shader.hpp"
 #include "utils.hpp"
 #include "textures.hpp"
 #include "model.hpp"
-#include <stb/stb_image.h>
+#include <stb_image.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
